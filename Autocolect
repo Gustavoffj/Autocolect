@@ -1,5 +1,4 @@
--- Valentine Collector Script
--- Auto coleta CandyCorn e Ghost Blocks
+-- CandyCorn Auto Collector Script
 -- Criado para Roblox
 
 local Players = game:GetService("Players")
@@ -9,32 +8,32 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Variáveis de controle
 local collecting = false
-local collectingGhosts = false
-local collectionSpeed = 0.5 -- Velocidade padrão (segundos entre coletas)
 local gui = nil
+local collectSpeed = 0.5 -- Velocidade padrão (tempo de espera entre coletas)
 
 -- Função para criar a GUI
 local function createGUI()
     -- Verifica se já existe GUI
-    if LocalPlayer.PlayerGui:FindFirstChild("ValentineCollectorGUI") then
-        LocalPlayer.PlayerGui:FindFirstChild("ValentineCollectorGUI"):Destroy()
+    if LocalPlayer.PlayerGui:FindFirstChild("CandyCornCollectorGUI") then
+        LocalPlayer.PlayerGui:FindFirstChild("CandyCornCollectorGUI"):Destroy()
     end
     
     -- Criar ScreenGui
     local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "ValentineCollectorGUI"
+    screenGui.Name = "CandyCornCollectorGUI"
     screenGui.ResetOnSpawn = false
     screenGui.Parent = LocalPlayer.PlayerGui
     
     -- Frame principal
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 320, 0, 280)
-    mainFrame.Position = UDim2.new(0.5, -160, 0.5, -140)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(40, 35, 45)
+    mainFrame.Size = UDim2.new(0, 300, 0, 240)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -120)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
     mainFrame.BorderSizePixel = 0
     mainFrame.Active = true
     mainFrame.Draggable = true
+    mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
     
     -- Corner radius para o frame
@@ -60,7 +59,7 @@ local function createGUI()
     title.Size = UDim2.new(1, -50, 1, 0)
     title.Position = UDim2.new(0, 10, 0, 0)
     title.BackgroundTransparency = 1
-    title.Text = "💖 Valentine Collector"
+    title.Text = "💖 AutoColect Valentim"
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextSize = 18
     title.Font = Enum.Font.GothamBold
@@ -72,7 +71,7 @@ local function createGUI()
     minimizeBtn.Name = "MinimizeButton"
     minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
     minimizeBtn.Position = UDim2.new(1, -35, 0, 5)
-    minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 120)
+    minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 20, 147)
     minimizeBtn.Text = "-"
     minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     minimizeBtn.TextSize = 20
@@ -84,151 +83,148 @@ local function createGUI()
     cornerMinimize.CornerRadius = UDim.new(0, 8)
     cornerMinimize.Parent = minimizeBtn
     
+    -- Container de conteúdo
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Name = "ContentFrame"
+    contentFrame.Size = UDim2.new(1, 0, 1, -40)
+    contentFrame.Position = UDim2.new(0, 0, 0, 40)
+    contentFrame.BackgroundTransparency = 1
+    contentFrame.Parent = mainFrame
+    
     -- Status Label
     local statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "StatusLabel"
     statusLabel.Size = UDim2.new(1, -20, 0, 30)
-    statusLabel.Position = UDim2.new(0, 10, 0, 50)
+    statusLabel.Position = UDim2.new(0, 10, 0, 10)
     statusLabel.BackgroundTransparency = 1
     statusLabel.Text = "Status: Parado"
     statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     statusLabel.TextSize = 14
     statusLabel.Font = Enum.Font.Gotham
     statusLabel.TextXAlignment = Enum.TextXAlignment.Left
-    statusLabel.Parent = mainFrame
+    statusLabel.Parent = contentFrame
     
     -- Contador de CandyCorn
     local countLabel = Instance.new("TextLabel")
     countLabel.Name = "CountLabel"
     countLabel.Size = UDim2.new(1, -20, 0, 25)
-    countLabel.Position = UDim2.new(0, 10, 0, 80)
+    countLabel.Position = UDim2.new(0, 10, 0, 40)
     countLabel.BackgroundTransparency = 1
     countLabel.Text = "Coletados: 0"
     countLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
     countLabel.TextSize = 12
     countLabel.Font = Enum.Font.Gotham
     countLabel.TextXAlignment = Enum.TextXAlignment.Left
-    countLabel.Parent = mainFrame
+    countLabel.Parent = contentFrame
     
-    -- Label de Velocidade
+    -- Frame de velocidade
+    local speedFrame = Instance.new("Frame")
+    speedFrame.Name = "SpeedFrame"
+    speedFrame.Size = UDim2.new(1, -20, 0, 50)
+    speedFrame.Position = UDim2.new(0, 10, 0, 70)
+    speedFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    speedFrame.BorderSizePixel = 0
+    speedFrame.Parent = contentFrame
+    
+    local cornerSpeed = Instance.new("UICorner")
+    cornerSpeed.CornerRadius = UDim.new(0, 8)
+    cornerSpeed.Parent = speedFrame
+    
+    -- Label de velocidade
     local speedLabel = Instance.new("TextLabel")
     speedLabel.Name = "SpeedLabel"
-    speedLabel.Size = UDim2.new(1, -20, 0, 20)
-    speedLabel.Position = UDim2.new(0, 10, 0, 110)
+    speedLabel.Size = UDim2.new(1, -10, 0, 20)
+    speedLabel.Position = UDim2.new(0, 5, 0, 5)
     speedLabel.BackgroundTransparency = 1
-    speedLabel.Text = "Velocidade: 0.5s"
-    speedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    speedLabel.TextSize = 11
-    speedLabel.Font = Enum.Font.Gotham
+    speedLabel.Text = "⚡ Velocidade: Normal (0.5s)"
+    speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedLabel.TextSize = 12
+    speedLabel.Font = Enum.Font.GothamBold
     speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-    speedLabel.Parent = mainFrame
+    speedLabel.Parent = speedFrame
     
-    -- Frame do Slider
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Name = "SliderFrame"
-    sliderFrame.Size = UDim2.new(1, -20, 0, 20)
-    sliderFrame.Position = UDim2.new(0, 10, 0, 135)
-    sliderFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-    sliderFrame.BorderSizePixel = 0
-    sliderFrame.Parent = mainFrame
+    -- Botões de velocidade
+    local speedBtnSlow = Instance.new("TextButton")
+    speedBtnSlow.Name = "SpeedSlow"
+    speedBtnSlow.Size = UDim2.new(0.3, -5, 0, 20)
+    speedBtnSlow.Position = UDim2.new(0, 5, 0, 25)
+    speedBtnSlow.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+    speedBtnSlow.Text = "Lento"
+    speedBtnSlow.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedBtnSlow.TextSize = 11
+    speedBtnSlow.Font = Enum.Font.Gotham
+    speedBtnSlow.BorderSizePixel = 0
+    speedBtnSlow.Parent = speedFrame
     
-    local cornerSlider = Instance.new("UICorner")
-    cornerSlider.CornerRadius = UDim.new(0, 10)
-    cornerSlider.Parent = sliderFrame
+    local cornerSlow = Instance.new("UICorner")
+    cornerSlow.CornerRadius = UDim.new(0, 6)
+    cornerSlow.Parent = speedBtnSlow
     
-    -- Slider Fill
-    local sliderFill = Instance.new("Frame")
-    sliderFill.Name = "SliderFill"
-    sliderFill.Size = UDim2.new(0.5, 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
-    sliderFill.BorderSizePixel = 0
-    sliderFill.Parent = sliderFrame
+    local speedBtnNormal = Instance.new("TextButton")
+    speedBtnNormal.Name = "SpeedNormal"
+    speedBtnNormal.Size = UDim2.new(0.3, -5, 0, 20)
+    speedBtnNormal.Position = UDim2.new(0.35, 0, 0, 25)
+    speedBtnNormal.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+    speedBtnNormal.Text = "Normal"
+    speedBtnNormal.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedBtnNormal.TextSize = 11
+    speedBtnNormal.Font = Enum.Font.GothamBold
+    speedBtnNormal.BorderSizePixel = 0
+    speedBtnNormal.Parent = speedFrame
     
-    local cornerFill = Instance.new("UICorner")
-    cornerFill.CornerRadius = UDim.new(0, 10)
-    cornerFill.Parent = sliderFill
+    local cornerNormal = Instance.new("UICorner")
+    cornerNormal.CornerRadius = UDim.new(0, 6)
+    cornerNormal.Parent = speedBtnNormal
     
-    -- Slider Button
-    local sliderButton = Instance.new("TextButton")
-    sliderButton.Name = "SliderButton"
-    sliderButton.Size = UDim2.new(0, 25, 0, 25)
-    sliderButton.Position = UDim2.new(0.5, -12.5, 0.5, -12.5)
-    sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    sliderButton.Text = ""
-    sliderButton.BorderSizePixel = 0
-    sliderButton.Parent = sliderFrame
+    local speedBtnFast = Instance.new("TextButton")
+    speedBtnFast.Name = "SpeedFast"
+    speedBtnFast.Size = UDim2.new(0.3, -5, 0, 20)
+    speedBtnFast.Position = UDim2.new(0.7, 0, 0, 25)
+    speedBtnFast.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+    speedBtnFast.Text = "Rápido"
+    speedBtnFast.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedBtnFast.TextSize = 11
+    speedBtnFast.Font = Enum.Font.Gotham
+    speedBtnFast.BorderSizePixel = 0
+    speedBtnFast.Parent = speedFrame
     
-    local cornerSliderBtn = Instance.new("UICorner")
-    cornerSliderBtn.CornerRadius = UDim.new(1, 0)
-    cornerSliderBtn.Parent = sliderButton
+    local cornerFast = Instance.new("UICorner")
+    cornerFast.CornerRadius = UDim.new(0, 6)
+    cornerFast.Parent = speedBtnFast
     
-    -- Botão Collect CandyCorn
+    -- Botão Collect
     local collectBtn = Instance.new("TextButton")
     collectBtn.Name = "CollectButton"
-    collectBtn.Size = UDim2.new(0, 145, 0, 35)
-    collectBtn.Position = UDim2.new(0, 10, 0, 170)
+    collectBtn.Size = UDim2.new(0, 130, 0, 40)
+    collectBtn.Position = UDim2.new(0, 10, 0, 140)
     collectBtn.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
-    collectBtn.Text = "▶ CandyCorn"
+    collectBtn.Text = "▶ Coletar"
     collectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    collectBtn.TextSize = 14
+    collectBtn.TextSize = 16
     collectBtn.Font = Enum.Font.GothamBold
     collectBtn.BorderSizePixel = 0
-    collectBtn.Parent = mainFrame
+    collectBtn.Parent = contentFrame
     
     local cornerCollect = Instance.new("UICorner")
     cornerCollect.CornerRadius = UDim.new(0, 8)
     cornerCollect.Parent = collectBtn
     
-    -- Botão Stop CandyCorn
+    -- Botão Stop
     local stopBtn = Instance.new("TextButton")
     stopBtn.Name = "StopButton"
-    stopBtn.Size = UDim2.new(0, 145, 0, 35)
-    stopBtn.Position = UDim2.new(0, 165, 0, 170)
+    stopBtn.Size = UDim2.new(0, 130, 0, 40)
+    stopBtn.Position = UDim2.new(0, 160, 0, 140)
     stopBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
     stopBtn.Text = "■ Parar"
     stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    stopBtn.TextSize = 14
+    stopBtn.TextSize = 16
     stopBtn.Font = Enum.Font.GothamBold
     stopBtn.BorderSizePixel = 0
-    stopBtn.Parent = mainFrame
+    stopBtn.Parent = contentFrame
     
     local cornerStop = Instance.new("UICorner")
     cornerStop.CornerRadius = UDim.new(0, 8)
     cornerStop.Parent = stopBtn
-    
-    -- Botão Collect Ghost
-    local collectGhostBtn = Instance.new("TextButton")
-    collectGhostBtn.Name = "CollectGhostButton"
-    collectGhostBtn.Size = UDim2.new(0, 145, 0, 35)
-    collectGhostBtn.Position = UDim2.new(0, 10, 0, 215)
-    collectGhostBtn.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-    collectGhostBtn.Text = "👻 Ghost Blocks"
-    collectGhostBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    collectGhostBtn.TextSize = 14
-    collectGhostBtn.Font = Enum.Font.GothamBold
-    collectGhostBtn.BorderSizePixel = 0
-    collectGhostBtn.Parent = mainFrame
-    
-    local cornerGhost = Instance.new("UICorner")
-    cornerGhost.CornerRadius = UDim.new(0, 8)
-    cornerGhost.Parent = collectGhostBtn
-    
-    -- Botão Stop Ghost
-    local stopGhostBtn = Instance.new("TextButton")
-    stopGhostBtn.Name = "StopGhostButton"
-    stopGhostBtn.Size = UDim2.new(0, 145, 0, 35)
-    stopGhostBtn.Position = UDim2.new(0, 165, 0, 215)
-    stopGhostBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-    stopGhostBtn.Text = "■ Parar Ghost"
-    stopGhostBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    stopGhostBtn.TextSize = 14
-    stopGhostBtn.Font = Enum.Font.GothamBold
-    stopGhostBtn.BorderSizePixel = 0
-    stopGhostBtn.Parent = mainFrame
-    
-    local cornerStopGhost = Instance.new("UICorner")
-    cornerStopGhost.CornerRadius = UDim.new(0, 8)
-    cornerStopGhost.Parent = stopGhostBtn
     
     -- Sombra
     local shadow = Instance.new("ImageLabel")
@@ -242,7 +238,7 @@ local function createGUI()
     shadow.ZIndex = -1
     shadow.Parent = mainFrame
     
-    return screenGui, mainFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, sliderButton, sliderFill, sliderFrame, collectGhostBtn, stopGhostBtn
+    return screenGui, mainFrame, contentFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, speedBtnSlow, speedBtnNormal, speedBtnFast
 end
 
 -- Função para encontrar CandyCorn no workspace
@@ -254,7 +250,7 @@ local function findCandyCorn()
         if obj:IsA("BasePart") or obj:IsA("Model") then
             local name = obj.Name:lower()
             -- Verifica vários nomes possíveis
-            if name:find("candy") or name:find("corn") or name:find("candycorn") then
+            if name:find("candy") or name:find("corn") or name:find("candycorn") or name:find("valentim") or name:find("heart") or name:find("valentine") then
                 table.insert(candyCorns, obj)
             end
         end
@@ -263,61 +259,31 @@ local function findCandyCorn()
     return candyCorns
 end
 
--- Função para encontrar Ghost Blocks no workspace
-local function findGhostBlocks()
-    local ghostBlocks = {}
-    
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") or obj:IsA("Model") then
-            local name = obj.Name:lower()
-            -- Procura por "ghost" no nome
-            if name:find("ghost") then
-                -- Verifica se tem ProximityPrompt
-                local prompt = obj:FindFirstChildOfClass("ProximityPrompt")
-                if prompt then
-                    table.insert(ghostBlocks, {part = obj, prompt = prompt})
-                end
-            end
-        end
-        -- Também procura diretamente por ProximityPrompts em objetos com "ghost" no nome
-        if obj:IsA("ProximityPrompt") and obj.Parent then
-            local parentName = obj.Parent.Name:lower()
-            if parentName:find("ghost") then
-                table.insert(ghostBlocks, {part = obj.Parent, prompt = obj})
-            end
-        end
-    end
-    
-    return ghostBlocks
-end
-
--- Função para teleportar o jogador para o centro do objeto
-local function teleportTo(position, offset)
+-- Função para teleportar o jogador
+local function teleportTo(position)
     local character = LocalPlayer.Character
     if not character then return false end
     
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return false end
     
-    -- Adiciona offset para ficar mais perto do centro
-    local finalPosition = position + (offset or Vector3.new(0, 0, 0))
-    humanoidRootPart.CFrame = CFrame.new(finalPosition)
+    humanoidRootPart.CFrame = CFrame.new(position)
     return true
 end
 
--- Função principal de coleta de CandyCorn
+-- Função principal de coleta
 local function startCollecting(statusLabel, countLabel)
     collecting = true
     local collected = 0
     
     while collecting do
-        statusLabel.Text = "Status: Coletando CandyCorn..."
+        statusLabel.Text = "Status: Coletando..."
         statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
         
         local candyCorns = findCandyCorn()
         
         if #candyCorns == 0 then
-            statusLabel.Text = "Status: Nenhum CandyCorn encontrado!"
+            statusLabel.Text = "Status: Nenhum item encontrado!"
             statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
             wait(3)
         else
@@ -325,31 +291,20 @@ local function startCollecting(statusLabel, countLabel)
                 if not collecting then break end
                 
                 local position
-                local centerOffset = Vector3.new(0, 0, 0)
-                
                 if candy:IsA("Model") then
-                    -- Pega o centro do Model
-                    local primaryPart = candy.PrimaryPart or candy:FindFirstChildWhichIsA("BasePart")
-                    if primaryPart then
-                        position = primaryPart.Position
-                        -- Calcula o centro do bounding box
-                        local _, size = candy:GetBoundingBox()
-                        centerOffset = Vector3.new(0, size.Y / 2, 0)
-                    end
+                    position = candy:GetPrimaryPartCFrame() and candy:GetPrimaryPartCFrame().Position or candy:GetModelCFrame().Position
                 elseif candy:IsA("BasePart") then
-                    -- Pega o centro exato da Part
                     position = candy.Position
-                    centerOffset = Vector3.new(0, candy.Size.Y / 2, 0)
                 end
                 
                 if position then
                     statusLabel.Text = "Status: Coletando " .. i .. "/" .. #candyCorns
                     
-                    -- Teleporta para o centro do CandyCorn
-                    teleportTo(position, centerOffset)
+                    -- Teleporta para o item
+                    teleportTo(position)
                     
                     -- Aguarda baseado na velocidade configurada
-                    wait(collectionSpeed)
+                    wait(collectSpeed)
                     
                     -- Tenta clicar ou tocar no objeto
                     if candy:IsA("BasePart") and candy:FindFirstChild("ClickDetector") then
@@ -361,7 +316,7 @@ local function startCollecting(statusLabel, countLabel)
                     collected = collected + 1
                     countLabel.Text = "Coletados: " .. collected
                     
-                    wait(0.2)
+                    wait(0.3)
                 end
             end
             
@@ -376,99 +331,47 @@ local function startCollecting(statusLabel, countLabel)
     statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 end
 
--- Função para parar a coleta de CandyCorn
+-- Função para parar a coleta
 local function stopCollecting()
     collecting = false
 end
 
--- Função principal de coleta de Ghost Blocks
-local function startCollectingGhosts(statusLabel, countLabel)
-    collectingGhosts = true
-    local collected = 0
-    
-    while collectingGhosts do
-        statusLabel.Text = "Status: Coletando Ghost Blocks..."
-        statusLabel.TextColor3 = Color3.fromRGB(138, 43, 226)
-        
-        local ghostBlocks = findGhostBlocks()
-        
-        if #ghostBlocks == 0 then
-            statusLabel.Text = "Status: Nenhum Ghost Block encontrado!"
-            statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(3)
-        else
-            for i, ghost in pairs(ghostBlocks) do
-                if not collectingGhosts then break end
-                
-                local part = ghost.part
-                local prompt = ghost.prompt
-                
-                if part and prompt then
-                    local position
-                    local centerOffset = Vector3.new(0, 0, 0)
-                    
-                    if part:IsA("Model") then
-                        local primaryPart = part.PrimaryPart or part:FindFirstChildWhichIsA("BasePart")
-                        if primaryPart then
-                            position = primaryPart.Position
-                            local _, size = part:GetBoundingBox()
-                            centerOffset = Vector3.new(0, size.Y / 2, 0)
-                        end
-                    elseif part:IsA("BasePart") then
-                        position = part.Position
-                        centerOffset = Vector3.new(0, part.Size.Y / 2, 0)
-                    end
-                    
-                    if position then
-                        statusLabel.Text = "Status: Coletando Ghost " .. i .. "/" .. #ghostBlocks
-                        
-                        -- Teleporta para o centro do Ghost Block
-                        teleportTo(position, centerOffset)
-                        
-                        wait(collectionSpeed)
-                        
-                        -- Simula segurar o botão no ProximityPrompt
-                        prompt.HoldDuration = prompt.HoldDuration or 0
-                        local holdTime = prompt.HoldDuration
-                        
-                        -- Ativa o prompt
-                        fireproximityprompt(prompt)
-                        
-                        -- Se tiver HoldDuration, espera esse tempo
-                        if holdTime > 0 then
-                            wait(holdTime + 0.1)
-                        else
-                            wait(0.5)
-                        end
-                        
-                        collected = collected + 1
-                        countLabel.Text = "Ghost Coletados: " .. collected
-                        
-                        wait(0.2)
-                    end
-                end
-            end
-            
-            -- Aguarda antes de verificar novamente
-            statusLabel.Text = "Status: Aguardando respawn de Ghosts..."
-            statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(5)
-        end
-    end
-    
-    statusLabel.Text = "Status: Parado"
-    statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-end
-
--- Função para parar a coleta de Ghost Blocks
-local function stopCollectingGhosts()
-    collectingGhosts = false
-end
-
 -- Criar e configurar a GUI
-local screenGui, mainFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, sliderButton, sliderFill, sliderFrame, collectGhostBtn, stopGhostBtn = createGUI()
+local screenGui, mainFrame, contentFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, speedBtnSlow, speedBtnNormal, speedBtnFast = createGUI()
 
--- Eventos dos botões
+-- Função para atualizar velocidade
+local function updateSpeed(speed, speedName, button)
+    collectSpeed = speed
+    speedLabel.Text = "⚡ Velocidade: " .. speedName
+    
+    -- Reset de cores
+    speedBtnSlow.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+    speedBtnNormal.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+    speedBtnFast.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+    
+    speedBtnSlow.Font = Enum.Font.Gotham
+    speedBtnNormal.Font = Enum.Font.Gotham
+    speedBtnFast.Font = Enum.Font.Gotham
+    
+    -- Destaca o botão selecionado
+    button.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+    button.Font = Enum.Font.GothamBold
+end
+
+-- Eventos dos botões de velocidade
+speedBtnSlow.MouseButton1Click:Connect(function()
+    updateSpeed(1.0, "Lento (1.0s)", speedBtnSlow)
+end)
+
+speedBtnNormal.MouseButton1Click:Connect(function()
+    updateSpeed(0.5, "Normal (0.5s)", speedBtnNormal)
+end)
+
+speedBtnFast.MouseButton1Click:Connect(function()
+    updateSpeed(0.2, "Rápido (0.2s)", speedBtnFast)
+end)
+
+-- Eventos dos botões principais
 collectBtn.MouseButton1Click:Connect(function()
     if not collecting then
         spawn(function()
@@ -481,63 +384,24 @@ stopBtn.MouseButton1Click:Connect(function()
     stopCollecting()
 end)
 
--- Eventos para Ghost Blocks
-collectGhostBtn.MouseButton1Click:Connect(function()
-    if not collectingGhosts then
-        spawn(function()
-            startCollectingGhosts(statusLabel, countLabel)
-        end)
-    end
-end)
-
-stopGhostBtn.MouseButton1Click:Connect(function()
-    stopCollectingGhosts()
-end)
-
--- Funcionalidade do Slider de Velocidade
-local dragging = false
-
-sliderButton.MouseButton1Down:Connect(function()
-    dragging = true
-end)
-
-game:GetService("UserInputService").InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
-game:GetService("RunService").RenderStepped:Connect(function()
-    if dragging then
-        local mouse = LocalPlayer:GetMouse()
-        local relativeX = mouse.X - sliderFrame.AbsolutePosition.X
-        local percentage = math.clamp(relativeX / sliderFrame.AbsoluteSize.X, 0, 1)
-        
-        -- Atualiza posição do botão
-        sliderButton.Position = UDim2.new(percentage, -12.5, 0.5, -12.5)
-        
-        -- Atualiza fill
-        sliderFill.Size = UDim2.new(percentage, 0, 1, 0)
-        
-        -- Calcula velocidade (0.1s a 2s)
-        collectionSpeed = 0.1 + (percentage * 1.9)
-        speedLabel.Text = string.format("Velocidade: %.2fs", collectionSpeed)
-    end
-end)
-
 -- Minimizar/Maximizar
 local minimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
     if minimized then
-        mainFrame:TweenSize(UDim2.new(0, 320, 0, 280), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        mainFrame:TweenSize(UDim2.new(0, 300, 0, 240), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        contentFrame.Visible = true
         minimizeBtn.Text = "-"
         minimized = false
     else
-        mainFrame:TweenSize(UDim2.new(0, 320, 0, 40), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        mainFrame:TweenSize(UDim2.new(0, 300, 0, 40), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        wait(0.3)
+        contentFrame.Visible = false
         minimizeBtn.Text = "+"
         minimized = true
     end
 end)
 
 -- Notificação de carregamento
-pri
+print("✅ 💖 AutoColect Valentim carregado com sucesso!")
+print("💕 Use a GUI para iniciar a coleta automática!")
+print("⚡ Escolha a velocidade de coleta: Lento, Normal ou Rápido!")
