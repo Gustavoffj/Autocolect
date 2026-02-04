@@ -1,4 +1,4 @@
--- CandyCorn Auto Collector Script
+-- CandyCorn Auto Collector Script - VERSÃO CORRIGIDA
 -- Criado para Roblox
 
 local Players = game:GetService("Players")
@@ -9,22 +9,19 @@ local LocalPlayer = Players.LocalPlayer
 -- Variáveis de controle
 local collecting = false
 local gui = nil
-local collectSpeed = 0.5 -- Velocidade padrão (tempo de espera entre coletas)
+local collectSpeed = 0.5
 
 -- Função para criar a GUI
 local function createGUI()
-    -- Verifica se já existe GUI
     if LocalPlayer.PlayerGui:FindFirstChild("CandyCornCollectorGUI") then
         LocalPlayer.PlayerGui:FindFirstChild("CandyCornCollectorGUI"):Destroy()
     end
     
-    -- Criar ScreenGui
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "CandyCornCollectorGUI"
     screenGui.ResetOnSpawn = false
     screenGui.Parent = LocalPlayer.PlayerGui
     
-    -- Frame principal
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
     mainFrame.Size = UDim2.new(0, 300, 0, 240)
@@ -36,12 +33,10 @@ local function createGUI()
     mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
     
-    -- Corner radius para o frame
     local cornerMain = Instance.new("UICorner")
     cornerMain.CornerRadius = UDim.new(0, 12)
     cornerMain.Parent = mainFrame
     
-    -- Header
     local header = Instance.new("Frame")
     header.Name = "Header"
     header.Size = UDim2.new(1, 0, 0, 40)
@@ -53,7 +48,6 @@ local function createGUI()
     cornerHeader.CornerRadius = UDim.new(0, 12)
     cornerHeader.Parent = header
     
-    -- Título
     local title = Instance.new("TextLabel")
     title.Name = "Title"
     title.Size = UDim2.new(1, -50, 1, 0)
@@ -66,7 +60,6 @@ local function createGUI()
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = header
     
-    -- Botão Minimizar
     local minimizeBtn = Instance.new("TextButton")
     minimizeBtn.Name = "MinimizeButton"
     minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
@@ -83,7 +76,6 @@ local function createGUI()
     cornerMinimize.CornerRadius = UDim.new(0, 8)
     cornerMinimize.Parent = minimizeBtn
     
-    -- Container de conteúdo
     local contentFrame = Instance.new("Frame")
     contentFrame.Name = "ContentFrame"
     contentFrame.Size = UDim2.new(1, 0, 1, -40)
@@ -91,7 +83,6 @@ local function createGUI()
     contentFrame.BackgroundTransparency = 1
     contentFrame.Parent = mainFrame
     
-    -- Status Label
     local statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "StatusLabel"
     statusLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -104,7 +95,6 @@ local function createGUI()
     statusLabel.TextXAlignment = Enum.TextXAlignment.Left
     statusLabel.Parent = contentFrame
     
-    -- Contador de CandyCorn
     local countLabel = Instance.new("TextLabel")
     countLabel.Name = "CountLabel"
     countLabel.Size = UDim2.new(1, -20, 0, 25)
@@ -117,7 +107,6 @@ local function createGUI()
     countLabel.TextXAlignment = Enum.TextXAlignment.Left
     countLabel.Parent = contentFrame
     
-    -- Frame de velocidade
     local speedFrame = Instance.new("Frame")
     speedFrame.Name = "SpeedFrame"
     speedFrame.Size = UDim2.new(1, -20, 0, 50)
@@ -130,7 +119,6 @@ local function createGUI()
     cornerSpeed.CornerRadius = UDim.new(0, 8)
     cornerSpeed.Parent = speedFrame
     
-    -- Label de velocidade
     local speedLabel = Instance.new("TextLabel")
     speedLabel.Name = "SpeedLabel"
     speedLabel.Size = UDim2.new(1, -10, 0, 20)
@@ -143,7 +131,6 @@ local function createGUI()
     speedLabel.TextXAlignment = Enum.TextXAlignment.Left
     speedLabel.Parent = speedFrame
     
-    -- Botões de velocidade
     local speedBtnSlow = Instance.new("TextButton")
     speedBtnSlow.Name = "SpeedSlow"
     speedBtnSlow.Size = UDim2.new(0.3, -5, 0, 20)
@@ -192,7 +179,6 @@ local function createGUI()
     cornerFast.CornerRadius = UDim.new(0, 6)
     cornerFast.Parent = speedBtnFast
     
-    -- Botão Collect
     local collectBtn = Instance.new("TextButton")
     collectBtn.Name = "CollectButton"
     collectBtn.Size = UDim2.new(0, 130, 0, 40)
@@ -209,7 +195,6 @@ local function createGUI()
     cornerCollect.CornerRadius = UDim.new(0, 8)
     cornerCollect.Parent = collectBtn
     
-    -- Botão Stop
     local stopBtn = Instance.new("TextButton")
     stopBtn.Name = "StopButton"
     stopBtn.Size = UDim2.new(0, 130, 0, 40)
@@ -226,7 +211,6 @@ local function createGUI()
     cornerStop.CornerRadius = UDim.new(0, 8)
     cornerStop.Parent = stopBtn
     
-    -- Sombra
     local shadow = Instance.new("ImageLabel")
     shadow.Name = "Shadow"
     shadow.Size = UDim2.new(1, 30, 1, 30)
@@ -241,25 +225,21 @@ local function createGUI()
     return screenGui, mainFrame, contentFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, speedBtnSlow, speedBtnNormal, speedBtnFast
 end
 
--- Função para encontrar CandyCorn no workspace
+-- FUNÇÃO CORRIGIDA para encontrar CandyCorn
 local function findCandyCorn()
     local candyCorns = {}
     
-    -- Procura por objetos chamados "CandyCorn" ou similares
+    -- Procura especificamente por objetos chamados "CandyCorn"
     for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") or obj:IsA("Model") then
-            local name = obj.Name:lower()
-            -- Verifica vários nomes possíveis
-            if name:find("candy") or name:find("corn") or name:find("candycorn") or name:find("valentim") or name:find("heart") or name:find("valentine") then
-                table.insert(candyCorns, obj)
-            end
+        if obj.Name == "CandyCorn" and (obj:IsA("BasePart") or obj:IsA("Model") or obj:IsA("MeshPart")) then
+            table.insert(candyCorns, obj)
         end
     end
     
     return candyCorns
 end
 
--- Função para teleportar o jogador
+-- FUNÇÃO MELHORADA de teleporte
 local function teleportTo(position)
     local character = LocalPlayer.Character
     if not character then return false end
@@ -267,11 +247,53 @@ local function teleportTo(position)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return false end
     
-    humanoidRootPart.CFrame = CFrame.new(position)
+    -- Teleporta um pouco acima para evitar ficar preso
+    humanoidRootPart.CFrame = CFrame.new(position + Vector3.new(0, 3, 0))
+    task.wait(0.1)
+    
     return true
 end
 
--- Função principal de coleta
+-- FUNÇÃO MELHORADA para coletar item
+local function collectItem(item)
+    local success = false
+    
+    -- Método 1: ClickDetector
+    local clickDetector = item:FindFirstChildOfClass("ClickDetector")
+    if clickDetector then
+        pcall(function()
+            fireclickdetector(clickDetector)
+            success = true
+        end)
+    end
+    
+    -- Método 2: ProximityPrompt
+    local proximityPrompt = item:FindFirstChildOfClass("ProximityPrompt")
+    if proximityPrompt then
+        pcall(function()
+            fireproximityprompt(proximityPrompt)
+            success = true
+        end)
+    end
+    
+    -- Método 3: TouchInterest (tocar no objeto)
+    local character = LocalPlayer.Character
+    if character then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart and item:IsA("BasePart") then
+            pcall(function()
+                firetouchinterest(humanoidRootPart, item, 0)
+                task.wait(0.1)
+                firetouchinterest(humanoidRootPart, item, 1)
+                success = true
+            end)
+        end
+    end
+    
+    return success
+end
+
+-- Função principal de coleta CORRIGIDA
 local function startCollecting(statusLabel, countLabel)
     collecting = true
     local collected = 0
@@ -283,16 +305,24 @@ local function startCollecting(statusLabel, countLabel)
         local candyCorns = findCandyCorn()
         
         if #candyCorns == 0 then
-            statusLabel.Text = "Status: Nenhum item encontrado!"
+            statusLabel.Text = "Status: Nenhum CandyCorn encontrado!"
             statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(3)
+            task.wait(3)
         else
             for i, candy in pairs(candyCorns) do
                 if not collecting then break end
                 
+                -- Verifica se o item ainda existe
+                if not candy or not candy.Parent then
+                    continue
+                end
+                
                 local position
                 if candy:IsA("Model") then
-                    position = candy:GetPrimaryPartCFrame() and candy:GetPrimaryPartCFrame().Position or candy:GetModelCFrame().Position
+                    local primaryPart = candy.PrimaryPart or candy:FindFirstChildWhichIsA("BasePart")
+                    if primaryPart then
+                        position = primaryPart.Position
+                    end
                 elseif candy:IsA("BasePart") then
                     position = candy.Position
                 end
@@ -300,30 +330,26 @@ local function startCollecting(statusLabel, countLabel)
                 if position then
                     statusLabel.Text = "Status: Coletando " .. i .. "/" .. #candyCorns
                     
-                    -- Teleporta para o item
-                    teleportTo(position)
-                    
-                    -- Aguarda baseado na velocidade configurada
-                    wait(collectSpeed)
-                    
-                    -- Tenta clicar ou tocar no objeto
-                    if candy:IsA("BasePart") and candy:FindFirstChild("ClickDetector") then
-                        fireclickdetector(candy.ClickDetector)
-                    elseif candy:IsA("BasePart") and candy:FindFirstChild("ProximityPrompt") then
-                        fireproximityprompt(candy.ProximityPrompt)
+                    -- Teleporta para o CandyCorn
+                    if teleportTo(position) then
+                        task.wait(0.2)
+                        
+                        -- Tenta coletar
+                        if collectItem(candy) then
+                            collected = collected + 1
+                            countLabel.Text = "Coletados: " .. collected
+                        end
+                        
+                        -- Aguarda baseado na velocidade configurada
+                        task.wait(collectSpeed)
                     end
-                    
-                    collected = collected + 1
-                    countLabel.Text = "Coletados: " .. collected
-                    
-                    wait(0.3)
                 end
             end
             
             -- Aguarda antes de verificar novamente
             statusLabel.Text = "Status: Aguardando respawn..."
             statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-            wait(5)
+            task.wait(5)
         end
     end
     
@@ -344,7 +370,6 @@ local function updateSpeed(speed, speedName, button)
     collectSpeed = speed
     speedLabel.Text = "⚡ Velocidade: " .. speedName
     
-    -- Reset de cores
     speedBtnSlow.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
     speedBtnNormal.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
     speedBtnFast.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
@@ -353,7 +378,6 @@ local function updateSpeed(speed, speedName, button)
     speedBtnNormal.Font = Enum.Font.Gotham
     speedBtnFast.Font = Enum.Font.Gotham
     
-    -- Destaca o botão selecionado
     button.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
     button.Font = Enum.Font.GothamBold
 end
@@ -374,7 +398,7 @@ end)
 -- Eventos dos botões principais
 collectBtn.MouseButton1Click:Connect(function()
     if not collecting then
-        spawn(function()
+        task.spawn(function()
             startCollecting(statusLabel, countLabel)
         end)
     end
@@ -394,7 +418,7 @@ minimizeBtn.MouseButton1Click:Connect(function()
         minimized = false
     else
         mainFrame:TweenSize(UDim2.new(0, 300, 0, 40), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
-        wait(0.3)
+        task.wait(0.3)
         contentFrame.Visible = false
         minimizeBtn.Text = "+"
         minimized = true
@@ -405,3 +429,4 @@ end)
 print("✅ 💖 AutoColect Valentim carregado com sucesso!")
 print("💕 Use a GUI para iniciar a coleta automática!")
 print("⚡ Escolha a velocidade de coleta: Lento, Normal ou Rápido!")
+print("🔍 Buscando apenas objetos chamados 'CandyCorn'")
