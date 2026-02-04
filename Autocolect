@@ -1,0 +1,286 @@
+-- CandyCorn Auto Collector Script
+-- Criado para Roblox
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Variáveis de controle
+local collecting = false
+local gui = nil
+
+-- Função para criar a GUI
+local function createGUI()
+    -- Verifica se já existe GUI
+    if LocalPlayer.PlayerGui:FindFirstChild("CandyCornCollectorGUI") then
+        LocalPlayer.PlayerGui:FindFirstChild("CandyCornCollectorGUI"):Destroy()
+    end
+    
+    -- Criar ScreenGui
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "CandyCornCollectorGUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = LocalPlayer.PlayerGui
+    
+    -- Frame principal
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = UDim2.new(0, 300, 0, 180)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -90)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = screenGui
+    
+    -- Corner radius para o frame
+    local cornerMain = Instance.new("UICorner")
+    cornerMain.CornerRadius = UDim.new(0, 12)
+    cornerMain.Parent = mainFrame
+    
+    -- Header
+    local header = Instance.new("Frame")
+    header.Name = "Header"
+    header.Size = UDim2.new(1, 0, 0, 40)
+    header.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
+    header.BorderSizePixel = 0
+    header.Parent = mainFrame
+    
+    local cornerHeader = Instance.new("UICorner")
+    cornerHeader.CornerRadius = UDim.new(0, 12)
+    cornerHeader.Parent = header
+    
+    -- Título
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.new(1, -50, 1, 0)
+    title.Position = UDim2.new(0, 10, 0, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "🎃 CandyCorn Collector"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 18
+    title.Font = Enum.Font.GothamBold
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = header
+    
+    -- Botão Minimizar
+    local minimizeBtn = Instance.new("TextButton")
+    minimizeBtn.Name = "MinimizeButton"
+    minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+    minimizeBtn.Position = UDim2.new(1, -35, 0, 5)
+    minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+    minimizeBtn.Text = "-"
+    minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    minimizeBtn.TextSize = 20
+    minimizeBtn.Font = Enum.Font.GothamBold
+    minimizeBtn.BorderSizePixel = 0
+    minimizeBtn.Parent = header
+    
+    local cornerMinimize = Instance.new("UICorner")
+    cornerMinimize.CornerRadius = UDim.new(0, 8)
+    cornerMinimize.Parent = minimizeBtn
+    
+    -- Status Label
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "StatusLabel"
+    statusLabel.Size = UDim2.new(1, -20, 0, 30)
+    statusLabel.Position = UDim2.new(0, 10, 0, 50)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Text = "Status: Parado"
+    statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    statusLabel.TextSize = 14
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    statusLabel.Parent = mainFrame
+    
+    -- Contador de CandyCorn
+    local countLabel = Instance.new("TextLabel")
+    countLabel.Name = "CountLabel"
+    countLabel.Size = UDim2.new(1, -20, 0, 25)
+    countLabel.Position = UDim2.new(0, 10, 0, 80)
+    countLabel.BackgroundTransparency = 1
+    countLabel.Text = "Coletados: 0"
+    countLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    countLabel.TextSize = 12
+    countLabel.Font = Enum.Font.Gotham
+    countLabel.TextXAlignment = Enum.TextXAlignment.Left
+    countLabel.Parent = mainFrame
+    
+    -- Botão Collect
+    local collectBtn = Instance.new("TextButton")
+    collectBtn.Name = "CollectButton"
+    collectBtn.Size = UDim2.new(0, 130, 0, 40)
+    collectBtn.Position = UDim2.new(0, 10, 0, 120)
+    collectBtn.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
+    collectBtn.Text = "▶ Coletar"
+    collectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    collectBtn.TextSize = 16
+    collectBtn.Font = Enum.Font.GothamBold
+    collectBtn.BorderSizePixel = 0
+    collectBtn.Parent = mainFrame
+    
+    local cornerCollect = Instance.new("UICorner")
+    cornerCollect.CornerRadius = UDim.new(0, 8)
+    cornerCollect.Parent = collectBtn
+    
+    -- Botão Stop
+    local stopBtn = Instance.new("TextButton")
+    stopBtn.Name = "StopButton"
+    stopBtn.Size = UDim2.new(0, 130, 0, 40)
+    stopBtn.Position = UDim2.new(0, 160, 0, 120)
+    stopBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    stopBtn.Text = "■ Parar"
+    stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    stopBtn.TextSize = 16
+    stopBtn.Font = Enum.Font.GothamBold
+    stopBtn.BorderSizePixel = 0
+    stopBtn.Parent = mainFrame
+    
+    local cornerStop = Instance.new("UICorner")
+    cornerStop.CornerRadius = UDim.new(0, 8)
+    cornerStop.Parent = stopBtn
+    
+    -- Sombra
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.Size = UDim2.new(1, 30, 1, 30)
+    shadow.Position = UDim2.new(0, -15, 0, -15)
+    shadow.BackgroundTransparency = 1
+    shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.ImageTransparency = 0.7
+    shadow.ZIndex = -1
+    shadow.Parent = mainFrame
+    
+    return screenGui, mainFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn
+end
+
+-- Função para encontrar CandyCorn no workspace
+local function findCandyCorn()
+    local candyCorns = {}
+    
+    -- Procura por objetos chamados "CandyCorn" ou similares
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") or obj:IsA("Model") then
+            local name = obj.Name:lower()
+            -- Verifica vários nomes possíveis
+            if name:find("candy") or name:find("corn") or name:find("candycorn") then
+                table.insert(candyCorns, obj)
+            end
+        end
+    end
+    
+    return candyCorns
+end
+
+-- Função para teleportar o jogador
+local function teleportTo(position)
+    local character = LocalPlayer.Character
+    if not character then return false end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return false end
+    
+    humanoidRootPart.CFrame = CFrame.new(position)
+    return true
+end
+
+-- Função principal de coleta
+local function startCollecting(statusLabel, countLabel)
+    collecting = true
+    local collected = 0
+    
+    while collecting do
+        statusLabel.Text = "Status: Coletando..."
+        statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+        
+        local candyCorns = findCandyCorn()
+        
+        if #candyCorns == 0 then
+            statusLabel.Text = "Status: Nenhum CandyCorn encontrado!"
+            statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+            wait(3)
+        else
+            for i, candy in pairs(candyCorns) do
+                if not collecting then break end
+                
+                local position
+                if candy:IsA("Model") then
+                    position = candy:GetPrimaryPartCFrame() and candy:GetPrimaryPartCFrame().Position or candy:GetModelCFrame().Position
+                elseif candy:IsA("BasePart") then
+                    position = candy.Position
+                end
+                
+                if position then
+                    statusLabel.Text = "Status: Indo para CandyCorn " .. i .. "/" .. #candyCorns
+                    
+                    -- Teleporta para o CandyCorn
+                    teleportTo(position)
+                    
+                    -- Aguarda a coleta (ajuste o tempo se necessário)
+                    wait(0.5)
+                    
+                    -- Tenta clicar ou tocar no objeto
+                    if candy:IsA("BasePart") and candy:FindFirstChild("ClickDetector") then
+                        fireclickdetector(candy.ClickDetector)
+                    elseif candy:IsA("BasePart") and candy:FindFirstChild("ProximityPrompt") then
+                        fireproximityprompt(candy.ProximityPrompt)
+                    end
+                    
+                    collected = collected + 1
+                    countLabel.Text = "Coletados: " .. collected
+                    
+                    wait(0.3)
+                end
+            end
+            
+            -- Aguarda antes de verificar novamente
+            statusLabel.Text = "Status: Aguardando respawn..."
+            statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+            wait(5)
+        end
+    end
+    
+    statusLabel.Text = "Status: Parado"
+    statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+end
+
+-- Função para parar a coleta
+local function stopCollecting()
+    collecting = false
+end
+
+-- Criar e configurar a GUI
+local screenGui, mainFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn = createGUI()
+
+-- Eventos dos botões
+collectBtn.MouseButton1Click:Connect(function()
+    if not collecting then
+        spawn(function()
+            startCollecting(statusLabel, countLabel)
+        end)
+    end
+end)
+
+stopBtn.MouseButton1Click:Connect(function()
+    stopCollecting()
+end)
+
+-- Minimizar/Maximizar
+local minimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+    if minimized then
+        mainFrame:TweenSize(UDim2.new(0, 300, 0, 180), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        minimizeBtn.Text = "-"
+        minimized = false
+    else
+        mainFrame:TweenSize(UDim2.new(0, 300, 0, 40), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        minimizeBtn.Text = "+"
+        minimized = true
+    end
+end)
+
+-- Notificação de carregamento
+print("✅ CandyCorn Collector carregado com sucesso!")
+print("🎃 Use a GUI para iniciar a coleta automática!")
