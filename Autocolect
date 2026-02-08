@@ -307,7 +307,6 @@ local function startCollecting(statusLabel, countLabel)
         if #candyCorns == 0 then
             statusLabel.Text = "Status: Nenhum CandyCorn encontrado!"
             statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-            task.wait(3)
         else
             for i, candy in pairs(candyCorns) do
                 if not collecting then break end
@@ -345,11 +344,6 @@ local function startCollecting(statusLabel, countLabel)
                     end
                 end
             end
-            
-            -- Aguarda antes de verificar novamente
-            statusLabel.Text = "Status: Aguardando respawn..."
-            statusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-            task.wait(5)
         end
     end
     
