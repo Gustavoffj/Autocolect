@@ -1,4 +1,4 @@
--- CandyCorn Auto Collector Script - VERSÃO CORRIGIDA
+-- CandyCorn Auto Collector Script - VERSÃO COM COLETA INSTANTÂNEA
 -- Criado para Roblox
 
 local Players = game:GetService("Players")
@@ -24,8 +24,8 @@ local function createGUI()
     
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 300, 0, 240)
-    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -120)
+    mainFrame.Size = UDim2.new(0, 300, 0, 290)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -145)
     mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
     mainFrame.BorderSizePixel = 0
     mainFrame.Active = true
@@ -179,10 +179,27 @@ local function createGUI()
     cornerFast.CornerRadius = UDim.new(0, 6)
     cornerFast.Parent = speedBtnFast
     
+    -- NOVO BOTÃO: Coletar Tudo Instantâneo
+    local instantBtn = Instance.new("TextButton")
+    instantBtn.Name = "InstantButton"
+    instantBtn.Size = UDim2.new(1, -20, 0, 40)
+    instantBtn.Position = UDim2.new(0, 10, 0, 130)
+    instantBtn.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
+    instantBtn.Text = "⚡ COLETAR TUDO (INSTANTÂNEO)"
+    instantBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    instantBtn.TextSize = 14
+    instantBtn.Font = Enum.Font.GothamBold
+    instantBtn.BorderSizePixel = 0
+    instantBtn.Parent = contentFrame
+    
+    local cornerInstant = Instance.new("UICorner")
+    cornerInstant.CornerRadius = UDim.new(0, 8)
+    cornerInstant.Parent = instantBtn
+    
     local collectBtn = Instance.new("TextButton")
     collectBtn.Name = "CollectButton"
     collectBtn.Size = UDim2.new(0, 130, 0, 40)
-    collectBtn.Position = UDim2.new(0, 10, 0, 140)
+    collectBtn.Position = UDim2.new(0, 10, 0, 185)
     collectBtn.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
     collectBtn.Text = "▶ Coletar"
     collectBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -198,7 +215,7 @@ local function createGUI()
     local stopBtn = Instance.new("TextButton")
     stopBtn.Name = "StopButton"
     stopBtn.Size = UDim2.new(0, 130, 0, 40)
-    stopBtn.Position = UDim2.new(0, 160, 0, 140)
+    stopBtn.Position = UDim2.new(0, 160, 0, 185)
     stopBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
     stopBtn.Text = "■ Parar"
     stopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -222,7 +239,7 @@ local function createGUI()
     shadow.ZIndex = -1
     shadow.Parent = mainFrame
     
-    return screenGui, mainFrame, contentFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, speedBtnSlow, speedBtnNormal, speedBtnFast
+    return screenGui, mainFrame, contentFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, speedBtnSlow, speedBtnNormal, speedBtnFast, instantBtn
 end
 
 -- FUNÇÃO CORRIGIDA para encontrar CandyCorn
@@ -291,6 +308,102 @@ local function collectItem(item)
     end
     
     return success
+end
+
+-- ⚡ NOVA FUNÇÃO: Coletar TUDO instantaneamente
+local function collectAllInstant(statusLabel, countLabel)
+    statusLabel.Text = "Status: ⚡ COLETANDO TUDO!"
+    statusLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+    
+    local candyCorns = findCandyCorn()
+    local totalFound = #candyCorns
+    
+    if totalFound == 0 then
+        statusLabel.Text = "Status: Nenhum CandyCorn encontrado!"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        task.wait(2)
+        statusLabel.Text = "Status: Parado"
+        statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        return
+    end
+    
+    local collected = 0
+    
+    -- Coletar TODOS de uma vez sem teleportar
+    for i, candy in pairs(candyCorns) do
+        if not candy or not candy.Parent then
+            continue
+        end
+        
+        -- Tenta todos os métodos de coleta simultaneamente
+        task.spawn(function()
+            local success = false
+            
+            -- ClickDetector
+            local clickDetector = candy:FindFirstChildOfClass("ClickDetector")
+            if clickDetector then
+                pcall(function()
+                    fireclickdetector(clickDetector)
+                    success = true
+                end)
+            end
+            
+            -- ProximityPrompt
+            local proximityPrompt = candy:FindFirstChildOfClass("ProximityPrompt")
+            if proximityPrompt then
+                pcall(function()
+                    fireproximityprompt(proximityPrompt)
+                    success = true
+                end)
+            end
+            
+            -- TouchInterest
+            local character = LocalPlayer.Character
+            if character then
+                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    -- Teleporta o CandyCorn até o jogador
+                    if candy:IsA("BasePart") then
+                        pcall(function()
+                            candy.CFrame = humanoidRootPart.CFrame
+                            task.wait(0.05)
+                            firetouchinterest(humanoidRootPart, candy, 0)
+                            task.wait(0.05)
+                            firetouchinterest(humanoidRootPart, candy, 1)
+                            success = true
+                        end)
+                    elseif candy:IsA("Model") then
+                        local primaryPart = candy.PrimaryPart or candy:FindFirstChildWhichIsA("BasePart")
+                        if primaryPart then
+                            pcall(function()
+                                candy:SetPrimaryPartCFrame(humanoidRootPart.CFrame)
+                                task.wait(0.05)
+                                firetouchinterest(humanoidRootPart, primaryPart, 0)
+                                task.wait(0.05)
+                                firetouchinterest(humanoidRootPart, primaryPart, 1)
+                                success = true
+                            end)
+                        end
+                    end
+                end
+            end
+            
+            if success then
+                collected = collected + 1
+                countLabel.Text = "Coletados: " .. collected .. "/" .. totalFound
+            end
+        end)
+    end
+    
+    -- Aguarda um pouco para processar tudo
+    task.wait(2)
+    
+    statusLabel.Text = "Status: ✅ Coleta instantânea completa!"
+    statusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+    
+    task.wait(3)
+    statusLabel.Text = "Status: Parado"
+    statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 end
 
 -- Função principal de coleta CORRIGIDA
@@ -363,7 +476,7 @@ local function stopCollecting()
 end
 
 -- Criar e configurar a GUI
-local screenGui, mainFrame, contentFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, speedBtnSlow, speedBtnNormal, speedBtnFast = createGUI()
+local screenGui, mainFrame, contentFrame, statusLabel, countLabel, collectBtn, stopBtn, minimizeBtn, speedLabel, speedBtnSlow, speedBtnNormal, speedBtnFast, instantBtn = createGUI()
 
 -- Função para atualizar velocidade
 local function updateSpeed(speed, speedName, button)
@@ -395,6 +508,13 @@ speedBtnFast.MouseButton1Click:Connect(function()
     updateSpeed(0.2, "Rápido (0.2s)", speedBtnFast)
 end)
 
+-- ⚡ EVENTO DO NOVO BOTÃO INSTANTÂNEO
+instantBtn.MouseButton1Click:Connect(function()
+    task.spawn(function()
+        collectAllInstant(statusLabel, countLabel)
+    end)
+end)
+
 -- Eventos dos botões principais
 collectBtn.MouseButton1Click:Connect(function()
     if not collecting then
@@ -412,7 +532,7 @@ end)
 local minimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
     if minimized then
-        mainFrame:TweenSize(UDim2.new(0, 300, 0, 240), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
+        mainFrame:TweenSize(UDim2.new(0, 300, 0, 290), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.3, true)
         contentFrame.Visible = true
         minimizeBtn.Text = "-"
         minimized = false
@@ -429,4 +549,4 @@ end)
 print("✅ 💖 AutoColect Valentim carregado com sucesso!")
 print("💕 Use a GUI para iniciar a coleta automática!")
 print("⚡ Escolha a velocidade de coleta: Lento, Normal ou Rápido!")
-print("🔍 Buscando apenas objetos chamados 'CandyCorn'")
+print("🔍 Buscando apenas objetos chamados 'Cand
